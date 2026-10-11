@@ -12,26 +12,18 @@ public class CurrencyServiceJpa implements CurrencyService {
 
     private final CurrencyRepository repository;
 
+    @Value("${server.port:8080}")
+    private String serverPort;
+
     public CurrencyServiceJpa(CurrencyRepository repository) {
         this.repository = repository;
     }
 
-    @Value("${server.port:8100}")
-    private String serverPort;
-
     @Override
-    public CurrencyResponse findBySourceCurrencyAndTargetCurrency(
-            String sourceCurrency,
-            String targetCurrency
-    ) throws Exception {
-        var currency = repository.findBySourceCurrencyAndTargetCurrency(sourceCurrency, targetCurrency)
-                .orElseThrow(() -> new EntityNotFoundException("Cotação não encontrada"));
-        String environment = "Currency API running in Port: " + serverPort;
-        return new CurrencyResponse(
-                currency.getSourceCurrency(),
-                currency.getTargetCurrency(),
-                currency.getConversionRate(),
-                environment
-        );
+    public CurrencyResponse findBySourceCurrencyAndTargetCurrency(String sourceCurrency, String targetCurrency) throws Exception {
+        var currency =  repository.findBySourceCurrencyAndTargetCurrency(sourceCurrency.toUpperCase(), targetCurrency.toUpperCase())
+                .orElseThrow(() -> new EntityNotFoundException("Currency não encontrado"));
+        String environment = "Currency API running in port " + serverPort;
+        return new CurrencyResponse(currency.getSourceCurrency(), currency.getTargetCurrency(), currency.getConversionRate(), environment);
     }
 }
